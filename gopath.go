@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	errwrap "github.com/moisespsena/go-error-wrap"
+	errwrap "github.com/moisespsena-go/error-wrap"
 
 	"github.com/mitchellh/go-homedir"
 	"github.com/phayes/permbits"
