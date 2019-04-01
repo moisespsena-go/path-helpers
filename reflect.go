@@ -23,5 +23,5 @@ TypeLoop:
 		}
 	}
 
-	return TrimGoPathC(typ.PkgPath())
+	return StripGoPath(typ.PkgPath())
 }

@@ -8,17 +8,38 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/moisespsena/go-error-wrap"
+	errwrap "github.com/moisespsena/go-error-wrap"
 
 	"github.com/mitchellh/go-homedir"
 	"github.com/phayes/permbits"
 )
 
+type GoPath interface {
+	Pth() string
+	HasSrcDir() bool
+}
+
+type goPath struct {
+	pth       string
+	hasSrcDir bool
+}
+
+func (p goPath) Pth() string {
+	return p.pth
+}
+
+func (p goPath) HasSrcDir() bool {
+	return p.hasSrcDir
+}
+
 var (
-	GOPATHC string
-	GOPATH  string
-	GOPATHS []string
+	gopathc string
+	GOPATHS []*goPath
 )
+
+func GoPathC() string {
+	return gopathc
+}
 
 func init() {
 	var (
@@ -32,14 +53,25 @@ func init() {
 	if _, err := os.Stat("vendor"); err == nil {
 		if abs, err := filepath.Abs("vendor"); err == nil {
 			paths[abs] = nil
-			GOPATHS = append(GOPATHS, abs)
+			GOPATHS = append(GOPATHS, &goPath{pth: abs})
 		}
 	}
 
-	for _, pth = range strings.Split(os.Getenv("GOPATH"), ":") {
+	if gopathc != "" {
+		for _, pth := range strings.Split(gopathc, string(os.PathListSeparator)) {
+			if pth != "" {
+				if _, ok = paths[pth]; !ok {
+					GOPATHS = append(GOPATHS, &goPath{pth: pth})
+					paths[pth] = nil
+				}
+			}
+		}
+	}
+
+	for _, pth = range strings.Split(os.Getenv("GOPATH"), string(os.PathListSeparator)) {
 		if pth != "" {
 			if _, ok = paths[pth]; !ok {
-				GOPATHS = append(GOPATHS, pth)
+				GOPATHS = append(GOPATHS, &goPath{pth: pth})
 				paths[pth] = nil
 			}
 		}
@@ -53,38 +85,44 @@ func init() {
 	if _, err = os.Stat(pth); err == nil {
 		if _, ok = paths[pth]; !ok {
 			paths[pth] = nil
-			GOPATHS = append(GOPATHS, pth)
+			GOPATHS = append(GOPATHS, &goPath{pth: pth})
 		}
 	}
 
 	pth = build.Default.GOPATH
 	if _, ok = paths[pth]; !ok {
-		GOPATHS = append(GOPATHS, pth)
+		GOPATHS = append(GOPATHS, &goPath{pth: pth})
 		paths[pth] = nil
 	}
 
-	GOPATH = GOPATHS[0]
+	for _, pth := range GOPATHS {
+		pth.hasSrcDir = IsExistingDir(filepath.Join(pth.pth, "src"))
+	}
 }
 
-func ResolveGoPath(pth string) (gopath string) {
-	for _, gopath := range GOPATHS {
-		gpth := path.Join(gopath, pth)
-		if _, err := os.Stat(gpth); err == nil {
-			return gopath
+func ResolveGoPath(pth string) (gopath GoPath) {
+	for _, gp := range GOPATHS {
+		if _, err := os.Stat(path.Join(gp.pth, pth)); err == nil {
+			return gp
 		}
 	}
-	return ""
+	return nil
 }
 
-func ResolveGoSrcPath(p ...string) string {
-	pth := path.Join("src", path.Join(p...))
-	for _, gopath := range GOPATHS {
-		gpth := path.Join(gopath, pth)
-		if _, err := os.Stat(gpth); err == nil {
-			return gpth
+func ResolveGoSrcPath(p ...string) (gpth GoPath, pth string) {
+	pth2 := filepath.Join(p...)
+	for _, gp := range GOPATHS {
+		var src string
+		if gp.hasSrcDir {
+			src = path.Join(gp.pth, "src", pth2)
+		} else {
+			src = path.Join(gp.pth, pth2)
+		}
+		if _, err := os.Stat(src); err == nil {
+			return gp, src
 		}
 	}
-	return ""
+	return
 }
 
 func IsExistingDir(pth string) bool {
@@ -202,11 +240,12 @@ func ResolveFilePerms(pth string) (perms permbits.PermissionBits, err error) {
 	return p, nil
 }
 
-func TrimGoPathC(pth string, sub ...string) string {
-	if GOPATHC != "" {
-		gopathc := filepath.Join(append([]string{GOPATHC}, sub...)...)
-		return strings.TrimPrefix(strings.Trim(pth, string(filepath.Separator)),
+func StripGoPath(pth string, sub ...string) string {
+	if gopathc != "" {
+		gopathc := filepath.Join(append([]string{gopathc}, sub...)...)
+		p := strings.TrimPrefix(strings.Trim(pth, string(filepath.Separator)),
 			strings.TrimPrefix(gopathc, string(filepath.Separator))+string(filepath.Separator))
+		return p
 	}
 	return pth
 }

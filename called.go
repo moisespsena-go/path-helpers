@@ -8,39 +8,39 @@ import (
 	"strings"
 )
 
-func GetCalledFileNameSkip(skip int, abs ...bool) (pth string) {
+func GetCalledFileNameStripGoPath(skip int, abs ...bool) (pth string) {
+	defer func() {
+		pth = strings.TrimPrefix(pth, string(os.PathSeparator))
+	}()
 	_, filename, _, ok := runtime.Caller(skip)
 	if !ok {
 		panic(errors.New("Information unavailable."))
 	}
-	if len(abs) == 0 || !abs[0] {
-		for _, gp := range GOPATHS {
-			if strings.HasPrefix(filename, gp) {
-				return strings.TrimPrefix(
-					strings.TrimPrefix(filename, gp)[1:],
-					"src"+string(os.PathSeparator),
-				)
+	for _, gp := range GOPATHS {
+		if gp.HasSrcDir() {
+			if p2 := strings.TrimPrefix(filename, filepath.Join(gp.pth, "src")); len(p2) < len(filename) {
+				return p2
+			}
+		} else {
+			if p2 := strings.TrimPrefix(filename, gp.pth); len(p2) < len(filename) {
+				return p2
 			}
 		}
-		if filename[0] == os.PathSeparator {
-			filename = filename[1:]
-		}
-		return TrimGoPathC(filename, "src")
 	}
 	return filename
 }
 
 func GetCalledFileName(abs ...bool) string {
-	return GetCalledFileNameSkip(2, abs...)
+	return GetCalledFileNameStripGoPath(2, abs...)
 }
 
 func GetCalledDir(abs ...bool) string {
-	file := GetCalledFileNameSkip(2, abs...)
+	file := GetCalledFileNameStripGoPath(2, abs...)
 	return filepath.Dir(file)
 }
 
 func GetCalledDirOrError(abs ...bool) string {
-	file := GetCalledFileNameSkip(2, abs...)
+	file := GetCalledFileNameStripGoPath(2, abs...)
 	if file == "" {
 		panic("Invalid dir.")
 	}
