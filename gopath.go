@@ -247,5 +247,19 @@ func StripGoPath(pth string, sub ...string) string {
 			strings.TrimPrefix(gopathc, string(filepath.Separator))+string(filepath.Separator))
 		return p
 	}
+	pth = filepath.Join(append([]string{pth}, sub...)...)
+	for _, gpth := range GOPATHS {
+		prefix := gpth.pth
+		if gpth.hasSrcDir {
+			prefix = filepath.Join(prefix, "src")
+		}
+		if strings.HasPrefix(pth, prefix) {
+			return strings.TrimPrefix(pth, prefix+string(filepath.Separator))
+		}
+	}
 	return pth
+}
+
+func PkgFromPath(pth string) string {
+	return filepath.ToSlash(StripGoPath(pth))
 }
