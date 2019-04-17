@@ -30,13 +30,27 @@ func GetCalledFileNameStripGoPath(skip int, abs ...bool) (pth string) {
 	return filename
 }
 
-func GetCalledFileName(abs ...bool) string {
-	return GetCalledFileNameStripGoPath(2, abs...)
+func GetCalledFile(abs ...bool) string {
+	_, filename, _, ok := runtime.Caller(1)
+	if !ok {
+		panic(errors.New("runtime.Caller: information unavailable."))
+	}
+	if len(abs) == 0 || abs[0] == false {
+		return StripGoPath(filename)
+	}
+	return filename
 }
 
 func GetCalledDir(abs ...bool) string {
-	file := GetCalledFileNameStripGoPath(2, abs...)
-	return filepath.Dir(file)
+	_, filename, _, ok := runtime.Caller(1)
+	if !ok {
+		panic(errors.New("runtime.Caller: information unavailable."))
+	}
+	filename = filepath.Dir(filename)
+	if len(abs) == 0 || abs[0] == false {
+		return StripGoPath(filename)
+	}
+	return filename
 }
 
 func GetCalledDirOrError(abs ...bool) string {
