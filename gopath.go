@@ -2,15 +2,51 @@ package path_helpers
 
 import (
 	"fmt"
+	"go/build"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
 
-	errwrap "github.com/moisespsena-go/error-wrap"
+	"github.com/moisespsena-go/error-wrap"
 
 	"github.com/phayes/permbits"
 )
+
+func init() {
+	var (
+		pth string
+		ok  bool
+	)
+
+	paths := make(map[string]interface{})
+
+	if _, err := os.Stat("vendor"); err == nil {
+		if abs, err := filepath.Abs("vendor"); err == nil {
+			paths[abs] = nil
+			GOPATHS = append(GOPATHS, &goPath{pth: abs})
+		}
+	}
+
+	for _, pth = range strings.Split(os.Getenv("GOPATH"), string(os.PathListSeparator)) {
+		if pth != "" {
+			if _, ok = paths[pth]; !ok {
+				GOPATHS = append(GOPATHS, &goPath{pth: pth})
+				paths[pth] = nil
+			}
+		}
+	}
+
+	pth = build.Default.GOPATH
+	if _, ok = paths[pth]; !ok {
+		GOPATHS = append(GOPATHS, &goPath{pth: pth})
+		paths[pth] = nil
+	}
+
+	for _, pth := range GOPATHS {
+		pth.hasSrcDir = IsExistingDir(filepath.Join(pth.pth, "src"))
+	}
+}
 
 type GoPath interface {
 	Pth() string
