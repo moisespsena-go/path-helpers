@@ -2,7 +2,6 @@ package path_helpers
 
 import (
 	"fmt"
-	"go/build"
 	"os"
 	"path"
 	"path/filepath"
@@ -10,7 +9,6 @@ import (
 
 	errwrap "github.com/moisespsena-go/error-wrap"
 
-	"github.com/mitchellh/go-homedir"
 	"github.com/phayes/permbits"
 )
 
@@ -33,72 +31,8 @@ func (p goPath) HasSrcDir() bool {
 }
 
 var (
-	gopathc string
 	GOPATHS []*goPath
 )
-
-func GoPathC() string {
-	return gopathc
-}
-
-func init() {
-	var (
-		err error
-		pth string
-		ok  bool
-	)
-
-	paths := make(map[string]interface{})
-
-	if _, err := os.Stat("vendor"); err == nil {
-		if abs, err := filepath.Abs("vendor"); err == nil {
-			paths[abs] = nil
-			GOPATHS = append(GOPATHS, &goPath{pth: abs})
-		}
-	}
-
-	if gopathc != "" {
-		for _, pth := range strings.Split(gopathc, string(os.PathListSeparator)) {
-			if pth != "" {
-				if _, ok = paths[pth]; !ok {
-					GOPATHS = append(GOPATHS, &goPath{pth: pth})
-					paths[pth] = nil
-				}
-			}
-		}
-	}
-
-	for _, pth = range strings.Split(os.Getenv("GOPATH"), string(os.PathListSeparator)) {
-		if pth != "" {
-			if _, ok = paths[pth]; !ok {
-				GOPATHS = append(GOPATHS, &goPath{pth: pth})
-				paths[pth] = nil
-			}
-		}
-	}
-
-	pth, err = homedir.Expand("~/go")
-	if err != nil {
-		panic(err)
-	}
-
-	if _, err = os.Stat(pth); err == nil {
-		if _, ok = paths[pth]; !ok {
-			paths[pth] = nil
-			GOPATHS = append(GOPATHS, &goPath{pth: pth})
-		}
-	}
-
-	pth = build.Default.GOPATH
-	if _, ok = paths[pth]; !ok {
-		GOPATHS = append(GOPATHS, &goPath{pth: pth})
-		paths[pth] = nil
-	}
-
-	for _, pth := range GOPATHS {
-		pth.hasSrcDir = IsExistingDir(filepath.Join(pth.pth, "src"))
-	}
-}
 
 func ResolveGoPath(pth string) (gopath GoPath) {
 	for _, gp := range GOPATHS {
@@ -240,14 +174,8 @@ func ResolveFilePerms(pth string) (perms permbits.PermissionBits, err error) {
 	return p, nil
 }
 
-func StripGoPath(pth string, sub ...string) string {
-	if gopathc != "" {
-		gopathc := filepath.Join(append([]string{gopathc}, sub...)...)
-		p := strings.TrimPrefix(strings.Trim(pth, string(filepath.Separator)),
-			strings.TrimPrefix(gopathc, string(filepath.Separator))+string(filepath.Separator))
-		return p
-	}
-	pth = filepath.Join(append([]string{pth}, sub...)...)
+func StripGoPath(parts ...string) string {
+	pth := filepath.Join(parts...)
 	for _, gpth := range GOPATHS {
 		prefix := gpth.pth
 		if gpth.hasSrcDir {
