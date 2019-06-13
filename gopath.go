@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/moisespsena-go/error-wrap"
+	errwrap "github.com/moisespsena-go/error-wrap"
 
 	"github.com/phayes/permbits"
 )
@@ -208,6 +208,22 @@ func ResolveFilePerms(pth string) (perms permbits.PermissionBits, err error) {
 	p.SetUserExecute(false)
 	p.SetOtherExecute(false)
 	return p, nil
+}
+
+func MustResolveMode(pth string) os.FileMode {
+	mode, err := ResolveMode(pth)
+	if err != nil {
+		panic(err)
+	}
+	return mode
+}
+
+func MustResolveFileMode(pth string) os.FileMode {
+	mode, err := ResolveFileMode(pth)
+	if err != nil {
+		panic(err)
+	}
+	return mode
 }
 
 func StripGoPath(parts ...string) string {

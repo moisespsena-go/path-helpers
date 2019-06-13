@@ -19,6 +19,9 @@ func init() {
 }
 
 func cleanCalled(pth string, abs ...bool) string {
+	if len(GOPATHS) > 0 {
+		pth = StripGoPath(pth)
+	}
 	if pth[0] == filepath.Separator {
 		pth = pth[1:]
 	}
