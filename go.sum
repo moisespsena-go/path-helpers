@@ -1,0 +1,4 @@
+github.com/moisespsena-go/error-wrap v0.0.0-20190401221633-16a254c7a0f6 h1:PqBedZ5lStCri6t+mXOk7jDt2itUpwA7BZ1V3j7bQBU=
+github.com/moisespsena-go/error-wrap v0.0.0-20190401221633-16a254c7a0f6/go.mod h1:yrSo541xFER/cxsm37eUkpNh/eunMR98ttxwtKRIk6w=
+github.com/phayes/permbits v0.0.0-20190612203442-39d7c581d2ee h1:P6U24L02WMfj9ymZTxl7CxS73JC99x3ukk+DBkgQGQs=
+github.com/phayes/permbits v0.0.0-20190612203442-39d7c581d2ee/go.mod h1:3uODdxMgOaPYeWU7RzZLxVtJHZ/x1f/iHkBZuKJDzuY=
