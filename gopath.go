@@ -13,6 +13,8 @@ import (
 	"github.com/phayes/permbits"
 )
 
+var targetGoPath = os.Getenv("TARGET_GOPATH")
+
 func init() {
 	var (
 		pth string
@@ -28,11 +30,13 @@ func init() {
 		}
 	}
 
-	for _, pth = range strings.Split(os.Getenv("GOPATH"), string(os.PathListSeparator)) {
-		if pth != "" {
-			if _, ok = paths[pth]; !ok {
-				GOPATHS = append(GOPATHS, &goPath{pth: pth})
-				paths[pth] = nil
+	for _, pth := range []string{targetGoPath, os.Getenv("GOPATH")} {
+		for _, pth := range strings.Split(pth, string(os.PathListSeparator)) {
+			if pth != "" {
+				if _, ok = paths[pth]; !ok {
+					GOPATHS = append(GOPATHS, &goPath{pth: pth})
+					paths[pth] = nil
+				}
 			}
 		}
 	}
