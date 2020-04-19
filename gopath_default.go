@@ -18,7 +18,7 @@ func init() {
 	GOPATHS = append([]*goPath{{pth: gopathroot, hasSrcDir: true}}, GOPATHS...)
 }
 
-func cleanCalled(pth string, abs ...bool) string {
+func CleanCalled(pth string, abs ...bool) string {
 	if len(GOPATHS) > 0 {
 		pth = StripGoPath(pth)
 	}
@@ -38,9 +38,9 @@ func cleanCalled(pth string, abs ...bool) string {
 }
 
 func GetCalledFile(abs ...bool) string {
-	return cleanCalled(GetCalledFileAbs(2), abs...)
+	return CleanCalled(GetCalledFileAbs(2), abs...)
 }
 
 func GetCalledDir(abs ...bool) string {
-	return cleanCalled(filepath.Dir(GetCalledFileAbs(2)), abs...)
+	return CleanCalled(filepath.Dir(GetCalledFileAbs(2)), abs...)
 }
