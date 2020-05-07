@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	errwrap "github.com/moisespsena-go/error-wrap"
+	"github.com/pkg/errors"
 
 	"github.com/phayes/permbits"
 )
@@ -151,7 +151,7 @@ func IsExistingRegularFile(pth string) bool {
 func ResolveMode(pth string) (mode os.FileMode, err error) {
 	var perms permbits.PermissionBits
 	if perms, err = ResolvePerms(pth); err != nil {
-		err = errwrap.Wrap(err, "Resolver permissions of %q", pth)
+		err = errors.Wrapf(err, "Resolver permissions of %q", pth)
 		return
 	}
 	mode = os.FileMode(perms)
@@ -184,7 +184,7 @@ func ResolvePerms(pth string) (perms permbits.PermissionBits, err error) {
 func ResolveFileMode(pth string) (mode os.FileMode, err error) {
 	var perms permbits.PermissionBits
 	if perms, err = ResolveFilePerms(pth); err != nil {
-		err = errwrap.Wrap(err, "Resolver permissions of %q", pth)
+		err = errors.Wrapf(err, "Resolver permissions of %q", pth)
 		return
 	}
 	mode = os.FileMode(perms)
