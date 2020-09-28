@@ -34,7 +34,7 @@ func cleanCalled(pth string, abs ...bool) string {
 		pth = strings.TrimPrefix(pth, "src"+string(filepath.Separator))
 	}
 
-	return pth
+	return CleanModVersion(pth)
 }
 
 func GetCalledFileUp(up int, abs ...bool) string {

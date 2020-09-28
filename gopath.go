@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -246,4 +247,14 @@ func StripGoPath(parts ...string) string {
 
 func PkgFromPath(pth string) string {
 	return filepath.ToSlash(StripGoPath(pth))
+}
+
+var (
+	reCleanModVersion = regexp.MustCompile(`^(.+)@[^/]+(.*)$`)
+	reCleanModCacheRoot = regexp.MustCompile(`^.+/pkg/mod/(.*)$`)
+)
+
+// CleanModVersion clean mod version sufix `@vX.X.X-DATE-COMMIT_ID`
+func CleanModVersion(pth string) string {
+	return reCleanModCacheRoot.ReplaceAllString(reCleanModVersion.ReplaceAllString(pth, "$1$2"), "$1")
 }

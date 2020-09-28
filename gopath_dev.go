@@ -9,9 +9,9 @@ import (
 func GetCalledFileUp(up int, abs ...bool) string {
 	pth := GetCalledFileAbs(up + 2)
 	if len(abs) == 0 || abs[0] == false {
-		return StripGoPath(pth)
+		return CleanModVersion(StripGoPath(pth))
 	}
-	return pth
+	return CleanModVersion(pth)
 }
 
 func GetCalledDirUp(skip int, abs ...bool) string {
