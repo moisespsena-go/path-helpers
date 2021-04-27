@@ -250,11 +250,20 @@ func PkgFromPath(pth string) string {
 }
 
 var (
-	reCleanModVersion = regexp.MustCompile(`^(.+)@[^/]+(.*)$`)
+	reCleanModVersion   = regexp.MustCompile(`^(.+)@[^/]+(.*)$`)
 	reCleanModCacheRoot = regexp.MustCompile(`^.+/pkg/mod/(.*)$`)
 )
 
 // CleanModVersion clean mod version sufix `@vX.X.X-DATE-COMMIT_ID`
 func CleanModVersion(pth string) string {
 	return reCleanModCacheRoot.ReplaceAllString(reCleanModVersion.ReplaceAllString(pth, "$1$2"), "$1")
+}
+
+func MkdirAllIfNotExistsPerms(pth string, perms permbits.PermissionBits) error {
+	if exists, err := IsExistingDirE(pth); err != nil {
+		return err
+	} else if exists {
+		return nil
+	}
+	return os.MkdirAll(pth, os.FileMode(perms))
 }
